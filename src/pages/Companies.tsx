@@ -4,7 +4,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import SearchFilter from '@/components/ui/SearchFilter';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -72,7 +72,7 @@ interface Company {
   domains: string[];
   category: string;
   status: string;
-  logo?: string;
+  logo: string;
 }
 
 const Companies = () => {
@@ -175,14 +175,43 @@ const Companies = () => {
     setIsDeleteDialogOpen(true);
   };
   
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+        toast({
+          title: "Error",
+          description: "Please upload a valid image file (JPG, JPEG, or PNG)",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a preview URL
+      const imageUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, logo: imageUrl }));
+    }
+  };
+  
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.domains?.length || !formData.category) {
+    if (!formData.name || !formData.domains?.length || !formData.category || !formData.logo) {
       toast({
         title: "Error",
-        description: "Please fill all required fields",
+        description: "Please fill all required fields including company logo",
         variant: "destructive",
       });
       return;
@@ -466,15 +495,37 @@ const Companies = () => {
               </div>
               
               <div>
-                <Label htmlFor="logo">Logo URL (optional)</Label>
-                <Input
-                  id="logo"
-                  name="logo"
-                  value={formData.logo || ''}
-                  onChange={handleChange}
-                  placeholder="https://example.com/logo.png"
-                  className="mt-1"
-                />
+                <Label htmlFor="logo">Company Logo*</Label>
+                <div className="mt-1 flex items-center gap-4">
+                  <Input
+                    id="logo"
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={handleLogoChange}
+                    className="w-full"
+                  />
+                  {formData.logo && (
+                    <div className="relative w-20 h-20">
+                      <img
+                        src={formData.logo}
+                        alt="Logo preview"
+                        className="w-full h-full object-contain border rounded-md"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white shadow-sm"
+                        onClick={() => setFormData(prev => ({ ...prev, logo: '' }))}
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, JPEG, PNG (max 5MB)
+                </p>
               </div>
             </div>
             
