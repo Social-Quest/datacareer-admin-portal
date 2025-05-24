@@ -117,13 +117,13 @@ export default function Login() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col items-start space-y-2 text-sm text-muted-foreground">
+        {/* <CardFooter className="flex flex-col items-start space-y-2 text-sm text-muted-foreground">
           <p className="font-medium">Demo Credentials:</p>
           <div className="space-y-1">
             <p>Email: admin@datacareer.app</p>
             <p>Password: admin123</p>
           </div>
-        </CardFooter>
+        </CardFooter> */}
       </Card>
     </div>
   );
