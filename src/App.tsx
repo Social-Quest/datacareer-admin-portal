@@ -15,10 +15,12 @@ import Companies from "./pages/Companies";
 import Domains from "./pages/Domains";
 import Questions from "./pages/Questions";
 import Topics from "./pages/Topics";
+import Tables from "./pages/Tables";
 import Submissions from "./pages/Submissions";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import DatabasePage from '@/pages/Database';
 
 const queryClient = new QueryClient();
 
@@ -77,6 +79,22 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Topics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tables"
+                element={
+                  <ProtectedRoute>
+                    <Tables />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/database"
+                element={
+                  <ProtectedRoute>
+                    <DatabasePage />
                   </ProtectedRoute>
                 }
               />

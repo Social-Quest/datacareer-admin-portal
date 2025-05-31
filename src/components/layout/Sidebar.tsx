@@ -11,7 +11,8 @@ import {
   Settings, 
   ChevronLeft, 
   ChevronRight,
-  Tag
+  Tag,
+  Database
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +45,16 @@ const Sidebar = () => {
       name: 'Topics',
       icon: BookOpen,
       path: '/topics',
+    },
+    {
+      name: 'Tables',
+      icon: FileCheck,
+      path: '/tables',
+    },
+    {
+      name: 'Database',
+      icon: Database,
+      path: '/database',
     },
     {
       name: 'Submissions',
