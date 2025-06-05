@@ -93,24 +93,18 @@ export const createDatabase = createAsyncThunk(
           formDataToSend.append('schemaImageUrl', blob, 'schema-image.jpg');
         }
       }
-      // const response = await apiInstance.post('/api/dynamicTableInfo/admin', formDataToSend, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
-      const response = await fetch('http://localhost:3000/api/dynamicTableInfo/admin', {
-        method: 'POST',
+
+      const response = await apiInstance.post('/api/dynamicTableInfo/admin', formDataToSend, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
-        body: formDataToSend,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save database');
-      }
+      // if (response.status !== 200) {
+      //   throw new Error('Failed to save database');
+      // }
 
-      const result = await response.json();
+      const result = response.data;
       // Map API response to your Database type if needed
       return {
         id: result.id,
@@ -147,27 +141,17 @@ export const updateDatabase = createAsyncThunk(
           const blob = await response.blob();
           formDataToSend.append('schemaImageUrl', blob, 'schema-image.jpg');
         }
-      } else {
-        // If image is optional, you can send an empty string or skip this line
-        // formDataToSend.append('schemaImageUrl', '');
       }
 
-      // DO NOT set Content-Type manually!
-      const response = await fetch(`http://localhost:3000/api/dynamicTableInfo/admin/${id}`, {
-        method: 'PUT',
+      const response = await apiInstance.put(`/api/dynamicTableInfo/admin/${id}`, formDataToSend, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
-        body: formDataToSend,
       });
-      console.log("response ===>", response);
-      if (!response.ok) {
-        throw new Error('Failed to update database');
-      }
 
-      const result = await response.json();
+      const result = response.data;
 
-      console.log("result ===>", result);
+ 
       return {
         id: result.id,
         name: result.databaseName,
@@ -190,14 +174,9 @@ export const deleteDatabase = createAsyncThunk(
       const state: any = getState();
       const token = state.auth?.token;
 
-      const response = await fetch(`http://localhost:3000/api/dynamicTableInfo/admin/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiInstance.delete(`/api/dynamicTableInfo/admin/${id}`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Failed to delete database');
       }
 
@@ -218,13 +197,9 @@ export const fetchDatabaseById = createAsyncThunk(
     try {
       const state: any = getState();
       const token = state.auth?.token;
-      const response = await fetch(`http://localhost:3000/api/dynamicTableInfo/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error('Failed to fetch database');
-      const result = await response.json();
+      const response = await apiInstance.get(`/api/dynamicTableInfo/${id}`);
+      if (response.status !== 200) throw new Error('Failed to fetch database');
+      const result = response.data;
       return result.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch database');

@@ -105,17 +105,30 @@ const Tables = () => {
         });
       } else {
         // Create new table
-        await dispatch(createTable({
+        const resultAction = await dispatch(createTable({
           name: formData.name || '',
           query: formData.query || '',
           insertData: formData.insertData || ''
         }));
-        toast({
-          title: "Success",
-          description: "Table created successfully",
-        });
+
+        if (createTable.rejected.match(resultAction)) {
+          // Show backend error in toast
+          toast({
+            title: "Error",
+            description: typeof resultAction.payload === "string"
+              ? resultAction.payload
+              : "Failed to save table",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Table created successfully",
+          });
+          dispatch(fetchDynamicTables());
+          setIsDialogOpen(false);
+        }
       }
-      setIsDialogOpen(false);
     } catch (error) {
       toast({
         title: "Error",

@@ -37,7 +37,7 @@ const DatabasePage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentDatabase, setCurrentDatabase] = useState<Database | null>(null);
-  console.log("currentDatabase ===>", currentDatabase);
+
   const [formData, setFormData] = useState<Partial<Database>>({
     name: '',
     tables: [],

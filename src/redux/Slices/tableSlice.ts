@@ -80,10 +80,10 @@ const initialState: TableState = {
 
 export const createTable = createAsyncThunk(
   'tables/createTable',
-  async (formData: { name: string; query: string; insertData: string }, { getState }) => {
-    // Get token from auth state (adjust as needed)
-    const state: any = getState();
-    const token = state.auth?.token; // or wherever you store your JWT
+  async (formData: { name: string; query: string; insertData: string }, { getState, rejectWithValue }) => {
+    try {
+      const state: any = getState();
+      const token = state.auth?.token;
 
       const response = await apiInstance.post(
         '/api/dynamicTable',
@@ -99,7 +99,18 @@ export const createTable = createAsyncThunk(
           }
         }
       );
-    return response.data;
+
+      // If backend returns success: false, treat as error
+      if (response.data && response.data.success === false) {
+        // Log the error for debugging
+        console.error('Backend error:', response.data);
+        return rejectWithValue(response.data.message || 'Failed to create table');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create table');
+    }
   }
 );
 
