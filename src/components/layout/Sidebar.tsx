@@ -86,7 +86,7 @@ const Sidebar = () => {
       )}>
         {!collapsed && (
           <Link to="/dashboard" className="flex items-center">
-            <img src={logodatacareer} alt="DataCareer App Logo" className="h-10 w-auto" />
+            <img src={logodatacareer} alt="DataCareer App Logo" className="w-auto" />
             {/* <span className="font-bold text-xl">DataCareer</span> */}
           </Link>
         )}

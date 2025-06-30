@@ -54,16 +54,18 @@ export const fetchUsers = createAsyncThunk(
 
 export const toggleUserStatus = createAsyncThunk(
   'user/toggleStatus',
-  async ({ userId, newStatus }: { userId: number; newStatus: string }, { rejectWithValue }) => {
+  async ({ userId, newStatus }: { userId: number; newStatus: string }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await apiInstance.patch(`/api/auth/admin/users/${userId}/status`, 
-        { status: newStatus },
+      const response = await apiInstance.patch(
+        `/api/auth/admin/user/status`,
+        { userId, status: newStatus },
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         }
       );
+      dispatch(fetchUsers());
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;

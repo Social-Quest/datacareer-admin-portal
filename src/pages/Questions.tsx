@@ -64,6 +64,11 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactive' },
 ];
 
+const planOptions = [
+  { value: 'pro', label: 'Pro' },
+  { value: 'free', label: 'Free' },
+];
+
 const Questions = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -535,7 +540,7 @@ const Questions = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="dbType">DB Type</Label>
                   <select
@@ -583,6 +588,23 @@ const Questions = () => {
                   >
                     <option value="" disabled>Select Status</option>
                     {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="plan">Plan</Label>
+                  <select
+                    id="plan"
+                    name="plan"
+                    // value={formData.status}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    <option value="" disabled>Select Plan</option>
+                    {planOptions.map(option => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
