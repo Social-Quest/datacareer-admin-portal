@@ -12,6 +12,8 @@ import {
   Pencil,
   Trash2,
   X,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import {
   Tabs,
@@ -46,6 +48,7 @@ import { fetchTopics } from '@/redux/Slices/topicSlice';
 import MonacoEditor from '@monaco-editor/react';
 import { log } from 'console';
 import { fetchDatabases } from '@/redux/Slices/databaseSlice';
+import { apiInstance } from '@/api/axiosApi';
 
 // Filter options
 const typeOptions = [
@@ -105,6 +108,9 @@ const Questions = () => {
   });
   console.log("formData = ", formData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [queryResult, setQueryResult] = useState<any>(null);
+  const [isRunningQuery, setIsRunningQuery] = useState(false);
+  const [queryError, setQueryError] = useState<string | null>(null);
 
   // Fetch questions, companies and topics on component mount
   useEffect(() => {
@@ -344,6 +350,43 @@ const Questions = () => {
   const handleDialogClose = () => {
     setIsDialogOpen(false);
     setIsSubmitting(false);
+  };
+
+  // Run solution query
+  const runSolutionQuery = async () => {
+    if (!formData.solutionQuery?.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a query to run",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRunningQuery(true);
+    setQueryResult(null);
+    setQueryError(null);
+
+    try {
+      const response = await apiInstance.post('/api/question/admin/run-solution-query', {
+        query: formData.solutionQuery
+      });
+
+      const data = response.data;
+
+      if (data.status === 'success') {
+        setQueryResult(data.data);
+        setQueryError(null);
+      } else {
+        setQueryError(data.error || 'Query execution failed');
+        setQueryResult(null);
+      }
+    } catch (error: any) {
+      setQueryError(error.response?.data?.message || error.message || 'Failed to execute query');
+      setQueryResult(null);
+    } finally {
+      setIsRunningQuery(false);
+    }
   };
 
   return (
@@ -681,6 +724,68 @@ const Questions = () => {
                         onChange={(value) => setFormData(prev => ({ ...prev, solutionQuery: value || '' }))}
                       />
                     </div>
+                    <div className="mt-2 flex justify-between items-center">
+                      <Button
+                        type="button"
+                        onClick={runSolutionQuery}
+                        disabled={isRunningQuery || !formData.solutionQuery?.trim()}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        {isRunningQuery ? (
+                          <>
+                            <Loader2 size={16} className="mr-2 animate-spin" />
+                            Running...
+                          </>
+                        ) : (
+                          <>
+                            <Play size={16} className="mr-2" />
+                            Run Query
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {/* Query Results */}
+                    {queryResult && (
+                      <div className="mt-4 p-4 border rounded-md bg-green-50">
+                        <h4 className="font-medium text-green-800 mb-2">Query Results:</h4>
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full border border-gray-200">
+                            <thead>
+                              <tr className="bg-gray-50">
+                                {Object.keys(queryResult[0] || {}).map((key) => (
+                                  <th key={key} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border">
+                                    {key}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {queryResult.map((row: any, index: number) => (
+                                <tr key={index} className="bg-white">
+                                  {Object.values(row).map((value: any, colIndex: number) => (
+                                    <td key={colIndex} className="px-3 py-2 text-sm text-gray-900 border">
+                                      {String(value)}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <p className="text-xs text-green-600 mt-2">
+                          {queryResult.length} row(s) returned
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Query Error */}
+                    {queryError && (
+                      <div className="mt-4 p-4 border rounded-md bg-red-50">
+                        <h4 className="font-medium text-red-800 mb-2">Query Error:</h4>
+                        <p className="text-sm text-red-700">{queryError}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>
