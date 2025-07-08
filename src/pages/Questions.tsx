@@ -192,6 +192,11 @@ const Questions = () => {
   // Open dialog for creating or editing a question
   const openDialog = async (question: Question | null = null) => {
 
+    // Clear query results when opening dialog
+    setQueryResult(null);
+    setQueryError(null);
+    setIsRunningQuery(false);
+
     if (question) {
       setCurrentQuestion(question);
       // try {
@@ -350,6 +355,10 @@ const Questions = () => {
   const handleDialogClose = () => {
     setIsDialogOpen(false);
     setIsSubmitting(false);
+    // Clear query results when dialog is closed
+    setQueryResult(null);
+    setQueryError(null);
+    setIsRunningQuery(false);
   };
 
   // Run solution query
