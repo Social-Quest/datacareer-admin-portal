@@ -12,20 +12,29 @@ import {
   ChevronLeft,
   ChevronRight,
   Tag,
-  Database
+  Database,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Sidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [questionDbOpen, setQuestionDbOpen] = useState(true);
 
+  // Top-level nav items
   const navItems = [
     {
       name: 'Dashboard',
       icon: BarChart,
       path: '/dashboard',
     },
+
+  ];
+
+  // Question Database sub-items
+  const questionDbItems = [
     {
       name: 'Domains',
       icon: Tag,
@@ -61,6 +70,20 @@ const Sidebar = () => {
       icon: FileCheck,
       path: '/submissions',
     },
+  ];
+
+  // Remaining top-level nav items
+  const bottomNavItems = [
+    {
+      name: 'Job Database',
+      icon: Database, // Placeholder, replace with a more suitable icon if available
+      path: '/job-database',
+    },
+    {
+      name: 'Home Page',
+      icon: BookOpen, // Placeholder, replace with a more suitable icon if available
+      path: '/home',
+    },
     {
       name: 'Users',
       icon: Users,
@@ -87,7 +110,6 @@ const Sidebar = () => {
         {!collapsed && (
           <Link to="/dashboard" className="flex items-center">
             <img src={logodatacareer} alt="DataCareer App Logo" className="w-auto" />
-            {/* <span className="font-bold text-xl">DataCareer</span> */}
           </Link>
         )}
         <button
@@ -100,7 +122,69 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex-1 px-2 py-4 space-y-1">
+        {/* Top-level nav items */}
         {navItems.map((item) => {
+          const isActive = location.pathname.startsWith(item.path);
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={cn(
+                'flex items-center px-3 py-3 rounded-md transition-all',
+                isActive
+                  ? 'bg-primary text-white'
+                  : 'text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white',
+                collapsed ? 'justify-center' : 'justify-start'
+              )}
+            >
+              <item.icon size={20} />
+              {!collapsed && <span className="ml-3 font-medium">{item.name}</span>}
+            </Link>
+          );
+        })}
+
+        {/* Collapsible Question Database group */}
+        <div>
+          <button
+            onClick={() => setQuestionDbOpen((open) => !open)}
+            className={cn(
+              'flex items-center w-full px-3 py-3 rounded-md transition-all text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white',
+              collapsed ? 'justify-center' : 'justify-start'
+            )}
+            aria-expanded={questionDbOpen}
+          >
+            <Database size={20} />
+            {!collapsed && <span className="ml-3 font-medium">Question Database</span>}
+            {!collapsed && (
+              <span className="ml-auto">{questionDbOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
+            )}
+          </button>
+          {questionDbOpen && !collapsed && (
+            <div className="ml-7 mt-1 space-y-1">
+              {questionDbItems.map((item) => {
+                const isActive = location.pathname.startsWith(item.path);
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={cn(
+                      'flex items-center px-2 py-2 rounded-md transition-all',
+                      isActive
+                        ? 'bg-primary text-white'
+                        : 'text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white'
+                    )}
+                  >
+                    <item.icon size={18} />
+                    <span className="ml-2 text-sm">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom nav items */}
+        {bottomNavItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           return (
             <Link

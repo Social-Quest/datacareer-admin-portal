@@ -24,6 +24,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { fetchUsers, toggleUserStatus, setFilters } from '@/redux/Slices/userSlice';
 import { User as UserType } from '@/redux/Slices/userSlice';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Status filter options
 const statusOptions = [
@@ -50,6 +52,31 @@ const Users = () => {
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   
+  const userExportFields = [
+    { label: "User ID", value: "userId" },
+    { label: "Name", value: "name" },
+    { label: "Email", value: "email" },
+    { label: "Last Login", value: "lastLogin" },
+    { label: "Status", value: "status" },
+    { label: "Plan/Subscription Tier", value: "plan" },
+    { label: "Promo Code/Campaign", value: "promoCode" },
+    { label: "Registration Date", value: "registrationDate" },
+    { label: "Total Attempted Questions", value: "totalAttempted" },
+    { label: "Total Successful Questions", value: "totalSuccessful" },
+    { label: "Actions", value: "actions" },
+    { label: "Manual Plan Alteration", value: "manualPlanAlteration" },
+  ];
+
+  const userDateRanges = [
+    { label: "Last 7 Days", value: "7d" },
+    { label: "Last 30 Days", value: "30d" },
+    { label: "All", value: "all" },
+  ];
+
+  const [userExportDateRange, setUserExportDateRange] = React.useState("7d");
+  const [userExportFieldsSelected, setUserExportFieldsSelected] = React.useState(userExportFields.map(f => f.value));
+  const [userExportPopoverOpen, setUserExportPopoverOpen] = React.useState(false);
+
   // Fetch users on component mount and when filters change
   useEffect(() => {
     dispatch(fetchUsers(filters));
@@ -104,6 +131,31 @@ const Users = () => {
       description: "Password reset link sent to the user's email",
     });
   };
+
+  async function exportUsersToCSV() {
+    const params = new URLSearchParams();
+    params.append("dateRange", userExportDateRange === "7d" ? "7" : userExportDateRange === "30d" ? "30" : "all");
+    userExportFieldsSelected.forEach(field => params.append("fields", field));
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:3001/api/export/admin/exportCSV?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to export Excel");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `users_export_${userExportDateRange}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Export failed: " + error.message);
+    }
+  }
   
   return (
     <AdminLayout>
@@ -125,6 +177,65 @@ const Users = () => {
         ]}
       />
       
+      <div className="flex gap-2 items-center mb-4">
+        <select
+          className="border rounded px-2 py-1 text-sm"
+          value={userExportDateRange}
+          onChange={e => setUserExportDateRange(e.target.value)}
+        >
+          {userDateRanges.map(r => (
+            <option key={r.value} value={r.value}>{r.label}</option>
+          ))}
+        </select>
+        {/* Field Selection Popover */}
+        <Popover open={userExportPopoverOpen} onOpenChange={setUserExportPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="min-w-[160px] flex justify-between items-center px-3 py-1 text-sm border">
+              <span className="truncate text-left">
+                {userExportFieldsSelected.length === userExportFields.length
+                  ? "All Fields"
+                  : userExportFieldsSelected.length === 0
+                  ? "No Fields"
+                  : userExportFields
+                      .filter(f => userExportFieldsSelected.includes(f.value))
+                      .map(f => f.label)
+                      .slice(0, 2)
+                      .join(", ") +
+                    (userExportFieldsSelected.length > 2
+                      ? ` +${userExportFieldsSelected.length - 2} more`
+                      : "")}
+              </span>
+              <svg className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.584l3.71-3.354a.75.75 0 111.02 1.1l-4.25 3.84a.75.75 0 01-1.02 0l-4.25-3.84a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-72 p-2">
+            {userExportFields.map(field => (
+              <div key={field.value} className="flex items-center">
+                <Checkbox
+                  checked={userExportFieldsSelected.includes(field.value)}
+                  onCheckedChange={() =>
+                    setUserExportFieldsSelected(userExportFieldsSelected.includes(field.value)
+                      ? userExportFieldsSelected.filter(f => f !== field.value)
+                      : [...userExportFieldsSelected, field.value])
+                  }
+                  id={`user-field-${field.value}`}
+                />
+                <label htmlFor={`user-field-${field.value}`} className="ml-2 text-sm cursor-pointer">
+                  {field.label}
+                </label>
+              </div>
+            ))}
+          </PopoverContent>
+        </Popover>
+        <Button
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={exportUsersToCSV}
+        >
+          Export CSV
+        </Button>
+      </div>
+
       <div className="data-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="data-table">

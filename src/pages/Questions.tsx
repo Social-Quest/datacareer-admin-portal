@@ -276,7 +276,7 @@ const Questions = () => {
       formDataToSubmit.append('difficulty', formData.difficulty.toLowerCase());
       formDataToSubmit.append('questionContent', formData.questionContent);
       formDataToSubmit.append('dynamicTableInfoId', formData.dynamicTableInfoId);
-      formDataToSubmit.append('status',formData.status);
+      formDataToSubmit.append('status', formData.status.toLowerCase());
       // formDataToSubmit.append('schemaContent', formData.schemaContent);
       // if (formData.schemaImage && isFile(formData.schemaImage)) {
       //   formDataToSubmit.append('schemaImage', formData.schemaImage);
@@ -295,6 +295,8 @@ const Questions = () => {
         formDataToSubmit.append('solutionQuery', formData.solutionQuery);
       }
 
+      console.log("Submitting status:", formData.status);
+      console.log("Submitting status (lowercase):", formData.status.toLowerCase());
 
       
       if (currentQuestion) {
