@@ -448,6 +448,7 @@ const Questions = () => {
           <table className="data-table">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Title</th>
                 <th>Company</th>
                 <th>Type</th>
@@ -480,6 +481,7 @@ const Questions = () => {
               ) : (
                 questions.map((question) => (
                   <tr key={question.id} className="hover:bg-gray-50">
+                    <td className="font-medium">{question.id}</td>
                     <td className="font-medium">{question.title}</td>
                     <td>{question.company?.name || 'N/A'}</td>
                     <td>{question.dbType}</td>
