@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Calendar, ListChecks } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { apiInstance } from "@/api/axiosApi"; // import at the top
 
 // Dummy data for charts
 const difficultyData = [
@@ -132,22 +133,13 @@ async function exportToCSV(selectedFields, dateRange) {
     }
   });
 
-  // Get token (update this if you use a different auth method)
-  const token = localStorage.getItem("token");
-
   try {
-    const response = await fetch(`http://localhost:3001/api/export/admin/filterCSV?${params.toString()}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    });
+    const response = await apiInstance.get(
+      `/api/export/admin/filterCSV?${params.toString()}`,
+      { responseType: "blob" }
+    );
 
-    if (!response.ok) {
-      throw new Error("Failed to export CSV");
-    }
-
-    const blob = await response.blob();
+    const blob = response.data;
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -155,7 +147,7 @@ async function exportToCSV(selectedFields, dateRange) {
     a.click();
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    alert("Export failed: " + error.message);
+    alert("Export failed: " + (error?.message || "Unknown error"));
   }
 }
 

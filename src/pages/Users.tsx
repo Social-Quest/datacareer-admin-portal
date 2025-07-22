@@ -26,6 +26,7 @@ import { fetchUsers, toggleUserStatus, setFilters } from '@/redux/Slices/userSli
 import { User as UserType } from '@/redux/Slices/userSlice';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { apiInstance } from "@/api/axiosApi";
 
 // Status filter options
 const statusOptions = [
@@ -136,16 +137,12 @@ const Users = () => {
     const params = new URLSearchParams();
     params.append("dateRange", userExportDateRange === "7d" ? "7" : userExportDateRange === "30d" ? "30" : "all");
     userExportFieldsSelected.forEach(field => params.append("fields", field));
-    const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:3001/api/export/admin/exportCSV?${params.toString()}`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to export Excel");
-      const blob = await response.blob();
+      const response = await apiInstance.get(
+        `/api/export/admin/exportCSV?${params.toString()}`,
+        { responseType: "blob" }
+      );
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -153,7 +150,7 @@ const Users = () => {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Export failed: " + error.message);
+      alert("Export failed: " + (error?.message || "Unknown error"));
     }
   }
   
