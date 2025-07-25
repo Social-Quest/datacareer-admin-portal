@@ -112,7 +112,11 @@ const Users = () => {
   
   // Toggle user status (activate/deactivate)
   const handleToggleUserStatus = async (user: UserType) => {
+    console.log("user  = =",user);
+    
     const newStatus = user.status === 'active' ? 'inactive' : 'active';
+    console.log("newStatus = ",newStatus);
+    
     try {
       await dispatch(toggleUserStatus({ userId: user.id, newStatus })).unwrap();
       toast({
@@ -255,9 +259,9 @@ const Users = () => {
         <span>Inactive: {inactiveCount}</span>
       </div> */}
 
-      <div className="data-card overflow-x-auto w-full">
-        <div className="">
-          <table className="">
+      <div className="data-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="data-table">
             <thead>
               <tr>
                 {userExportFields
