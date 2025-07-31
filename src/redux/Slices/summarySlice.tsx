@@ -6,6 +6,8 @@ interface SummaryCounts {
     totalCompanies: number;
     totalUsers: number;
     totalSubmissions: number;
+    activeUsers: number;
+    averageActivePeriod: number;
 }
 
 interface SummaryState {

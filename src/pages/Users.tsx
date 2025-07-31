@@ -64,7 +64,7 @@ const Users = () => {
     { label: "Registration Date", value: "registrationDate" },
     { label: "Total Attempted Questions", value: "totalAttempted" },
     { label: "Total Successful Questions", value: "totalSuccessful" },
-    { label: "Actions", value: "actions" },
+    // { label: "Actions", value: "actions" },
     { label: "Manual Plan Alteration", value: "manualPlanAlteration" },
   ];
 
@@ -374,18 +374,41 @@ const Users = () => {
                 </div>
               </div>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Total Questions Attempted</h4>
-                    <p className="text-lg font-medium mt-1">{currentUser.totalAttempted}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">Last Login</h4>
-                    <p className="text-lg font-medium mt-1">{currentUser.lastLogin ? formatDateTime(currentUser.lastLogin) : 'Never'}</p>
-                  </div>
-                </div>
-              </div>
+                             <div className="space-y-4">
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <h4 className="text-sm font-medium text-gray-500">Total Questions Attempted</h4>
+                     <p className="text-lg font-medium mt-1">{currentUser.totalAttempted || '0'}</p>
+                   </div>
+                   <div>
+                     <h4 className="text-sm font-medium text-gray-500">Total Successful Questions</h4>
+                     <p className="text-lg font-medium mt-1">{currentUser.totalSuccessful || '0'}</p>
+                   </div>
+                   <div>
+                     <h4 className="text-sm font-medium text-gray-500">Last Login</h4>
+                     <p className="text-lg font-medium mt-1">{currentUser.lastLogin ? formatDateTime(currentUser.lastLogin) : 'Never'}</p>
+                   </div>
+                   <div>
+                     <h4 className="text-sm font-medium text-gray-500">Registration Date</h4>
+                     <p className="text-lg font-medium mt-1">{currentUser.registrationDate ? formatDateTime(currentUser.registrationDate) : 'Unknown'}</p>
+                   </div>
+                 </div>
+                 
+                 {/* Actions Display */}
+                 {currentUser.actions && (
+                   <div>
+                     <h4 className="text-sm font-medium text-gray-500 mb-2">User Actions</h4>
+                     <div className="bg-gray-50 p-3 rounded-md">
+                       <p className="text-sm text-gray-700 font-mono">
+                         {Array.isArray(currentUser.actions) 
+                           ? currentUser.actions.join(', ')
+                           : currentUser.actions
+                         }
+                       </p>
+                     </div>
+                   </div>
+                 )}
+               </div>
             </div>
           )}
           

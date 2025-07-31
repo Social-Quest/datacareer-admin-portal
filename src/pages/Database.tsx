@@ -22,7 +22,6 @@ import {
   createDatabase,
   updateDatabase,
   deleteDatabase,
-  setFilters,
   Database,
   fetchDatabaseById,
 } from '@/redux/Slices/databaseSlice';

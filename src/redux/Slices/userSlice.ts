@@ -7,8 +7,12 @@ export interface User {
   name: string;
   email: string;
   totalAttempted: number;
+  totalSuccessful?: number;
   lastLogin: string | null;
   status: string;
+  registrationDate?: string;
+  actions?: string | string[];
+  [key: string]: any; // Allow dynamic properties from API
 }
 
 interface UserState {

@@ -18,10 +18,19 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const Sidebar = () => {
+interface SidebarProps {
+  onCollapsedChange?: (collapsed: boolean) => void;
+}
+
+const Sidebar = ({ onCollapsedChange }: SidebarProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [questionDbOpen, setQuestionDbOpen] = useState(true);
+
+  // Notify parent when collapsed state changes
+  React.useEffect(() => {
+    onCollapsedChange?.(collapsed);
+  }, [collapsed, onCollapsedChange]);
 
   // Top-level nav items
   const navItems = [
@@ -99,7 +108,7 @@ const Sidebar = () => {
   return (
     <aside
       className={cn(
-        'bg-primary-dark text-white transition-all duration-300 ease-in-out flex flex-col',
+        'bg-primary-dark text-white transition-all duration-300 ease-in-out flex flex-col h-screen',
         collapsed ? 'w-16' : 'w-64'
       )}
     >

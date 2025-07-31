@@ -2,14 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import StatsCard from '@/components/ui/StatsCard';
 import PageHeader from '@/components/ui/PageHeader';
-import { Building2, FileQuestion, Users, FileCheck } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { Users, Clock, Briefcase, FileQuestion, FileCheck } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -19,25 +19,12 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSummaryCounts } from "@/redux/Slices/summarySlice";
 import type { RootState, AppDispatch } from "@/redux/store";
-import flowimage from "../../public/Datacareer Admin User Guide.png"
 import { Button } from '@/components/ui/button';
 import { Download, Calendar, ListChecks } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { apiInstance } from "@/api/axiosApi"; // import at the top
-
-// Dummy data for charts (keeping for fallback)
-const difficultyData = [
-  { name: 'Beginner', count: 45, fill: '#7692FF' },
-  { name: 'Intermediate', count: 30, fill: '#3D518C' },
-  { name: 'Advanced', count: 15, fill: '#E9724C' },
-];
-
-const questionTypeData = [
-  { name: 'MySQL', value: 55 },
-  { name: 'PostgreSQL', value: 35 },
-  { name: 'Both', value: 10 },
-];
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { apiInstance } from "@/api/axiosApi";
 
 const COLORS = ['#7692FF', '#3D518C', '#E9724C', '#ABD3FA'];
 
@@ -47,23 +34,6 @@ const recentSubmissions = [
   { id: 3, user: 'mike.wilson@outlook.com', question: 'Twitter Database Design', score: '45%', date: '2023-05-08', status: 'failed' },
   { id: 4, user: 'anna.johnson@company.co', question: 'Airbnb Booking Analysis', score: '92%', date: '2023-05-08', status: 'passed' },
   { id: 5, user: 'carlos.mendez@tech.edu', question: 'Instagram User Analytics', score: '68%', date: '2023-05-07', status: 'passed' },
-];
-
-// Dummy user tier data
-const userTierData = [
-  { name: 'Free', value: 120 },
-  { name: 'Pro', value: 30 },
-];
-
-// Dummy active user data (keeping for fallback)
-const activeUserData = [
-  { date: '2024-05-01', active: 10 },
-  { date: '2024-05-02', active: 12 },
-  { date: '2024-05-03', active: 15 },
-  { date: '2024-05-04', active: 9 },
-  { date: '2024-05-05', active: 14 },
-  { date: '2024-05-06', active: 11 },
-  { date: '2024-05-07', active: 13 },
 ];
 
 const dateRanges = [
@@ -107,7 +77,7 @@ function getGroupFieldValues(groupValue) {
   return group ? group.fields.map(f => f.value) : [];
 }
 
-// Replace the dummy exportToCSV with a real API call
+// Export function that sends both date range and selected fields
 async function exportToCSV(selectedFields, dateRange) {
   // Map frontend field values to API field names
   const fieldMap = {
@@ -156,24 +126,14 @@ const Dashboard = () => {
   const summary = useSelector((state: RootState) => state.summary);
 
   // Export controls state
-  const [dateRange, setDateRange] = useState('7d');
+  const [dateRange, setDateRange] = useState('all');
   const [selectedFields, setSelectedFields] = useState(getAllFieldValues());
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  // Preview table state
-  const [previewData, setPreviewData] = useState([]);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewError, setPreviewError] = useState('');
-
-  // Difficulty chart state
-  const [difficultyChartData, setDifficultyChartData] = useState([]);
-  const [difficultyChartLoading, setDifficultyChartLoading] = useState(false);
-  const [difficultyChartError, setDifficultyChartError] = useState('');
-
-  // Active users chart state
-  const [activeUsersChartData, setActiveUsersChartData] = useState([]);
-  const [activeUsersChartLoading, setActiveUsersChartLoading] = useState(false);
-  const [activeUsersChartError, setActiveUsersChartError] = useState('');
+  // Dashboard data state
+  const [dashboardData, setDashboardData] = useState([]);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState('');
 
   // Group/parent checkbox logic
   const isGroupChecked = (groupValue) => {
@@ -198,115 +158,113 @@ const Dashboard = () => {
       ? selectedFields.filter(f => f !== fieldValue)
       : [...selectedFields, fieldValue]);
   };
+  
   // Show summary of selected fields
   const selectedLabels = groupedFields.flatMap(g => g.fields.filter(f => selectedFields.includes(f.value)).map(f => f.label));
   const summaryText = selectedLabels.length === getAllFieldValues().length
     ? 'All Fields'
     : selectedLabels.length === 0
-    ? 'No Fields'
-    : selectedLabels.slice(0, 2).join(', ') + (selectedLabels.length > 2 ? ` +${selectedLabels.length - 2} more` : '');
+      ? 'No Fields'
+      : selectedLabels.slice(0, 2).join(', ') + (selectedLabels.length > 2 ? ` +${selectedLabels.length - 2} more` : '');
 
-  useEffect(() => {
-    dispatch(fetchSummaryCounts());
-  }, [dispatch]);
+  // Build dashboard data with query parameters
+  const buildDashboardData = async (dateRange) => {
+    setDashboardLoading(true);
+    setDashboardError('');
+    try {
+      // Build query params - only send dateRange
+      const params = new URLSearchParams();
+      params.append("dateRange", dateRange === "7d" ? "7" : dateRange === "30d" ? "30" : "all");
 
-  // Fetch difficulty chart data
+      const response = await apiInstance.get(`/api/export/admin/dashboardDisplay?${params.toString()}`);
+      setDashboardData(response.data);
+    } catch (err) {
+      setDashboardError('Failed to load dashboard data');
+      setDashboardData([]);
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
+
+  // Fetch dashboard data from single API endpoint
   useEffect(() => {
-    const fetchDifficultyChart = async () => {
-      setDifficultyChartLoading(true);
-      setDifficultyChartError('');
-      try {
-        const response = await apiInstance.get('/api/question/chart/difficulty');
-        
-        // Map API data to chart format
-        const colorMap = {
-          beginner: '#7692FF',
-          intermediate: '#3D518C',
-          advanced: '#E9724C',
-        };
-        
-        const chartData = response.data.data.map(item => ({
-          name: item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1),
-          count: item.count,
-          fill: colorMap[item.difficulty] || '#ABD3FA',
-        }));
-        
-        setDifficultyChartData(chartData);
-      } catch (err) {
-        setDifficultyChartError('Failed to load difficulty chart');
-        setDifficultyChartData([]);
-      } finally {
-        setDifficultyChartLoading(false);
-      }
-    };
+    buildDashboardData(dateRange);
+  }, [dateRange]);
+
+  // Helper functions to extract data from API response
+  const getMetricValue = (metricName) => {
+    const item = dashboardData.find(item => item.metric === metricName);
+    return item ? item.value : 0;
+  };
+
+  const getQuestionsByDifficultyData = () => {
+    const data = [];
+    const beginner = getMetricValue('Questions by Difficulty - beginner');
+    const intermediate = getMetricValue('Questions by Difficulty - intermediate');
+    const advanced = getMetricValue('Questions by Difficulty - advanced');
     
-    fetchDifficultyChart();
-  }, []);
-
-  // Fetch active users chart data
-  useEffect(() => {
-    const fetchActiveUsersChart = async () => {
-      setActiveUsersChartLoading(true);
-      setActiveUsersChartError('');
-      try {
-        const response = await apiInstance.get('/api/auth/admin/chart/active-users');
-        
-        // Map API data to chart format
-        const chartData = response.data.data.map(item => ({
-          date: item.date,
-          active: item.activeUsers,
-        }));
-        
-        setActiveUsersChartData(chartData);
-      } catch (err) {
-        setActiveUsersChartError('Failed to load active users chart');
-        setActiveUsersChartData([]);
-      } finally {
-        setActiveUsersChartLoading(false);
-      }
-    };
+    if (beginner > 0) data.push({ name: 'Beginner', count: beginner, fill: '#7692FF' });
+    if (intermediate > 0) data.push({ name: 'Intermediate', count: intermediate, fill: '#3D518C' });
+    if (advanced > 0) data.push({ name: 'Advanced', count: advanced, fill: '#E9724C' });
     
-    fetchActiveUsersChart();
-  }, []);
+    return data;
+  };
 
-  // Fetch preview data when fields or dateRange change
-  useEffect(() => {
-    const fetchPreview = async () => {
-      setPreviewLoading(true);
-      setPreviewError('');
-      try {
-        // Map frontend field values to API field names
-        const fieldMap = {
-          registeredUsers: "numberOfRegisteredUsers",
-          activeUsers: "numberOfActiveUsers",
-          avgActivePeriod: "averageActivePeriod",
-          userTier: "breakdownOfUsersByTier",
-          totalSubmissions: "numberOfSubmissions",
-          totalQuestions: "numberOfQuestions",
-          questionsByDifficulty: "breakdownOfQuestionsByDifficulty",
-          questionsByCompany: "breakdownOfQuestionsByCompany",
-          submissionsBySuccess: "breakdownOfSubmissionsBySuccessMismatch",
-          submissionsByDifficulty: "breakdownOfSubmissionsByDifficulty",
-          submissionsByCompany: "breakdownOfSubmissionsByCompany",
-        };
-        const params = new URLSearchParams();
-        params.append("dateRange", dateRange === "7d" ? "7" : dateRange === "30d" ? "30" : "all");
-        selectedFields.forEach(field => {
-          if (fieldMap[field]) {
-            params.append("fields", fieldMap[field]);
-          }
-        });
-        const response = await apiInstance.get(`/api/export/admin/previewCSV?${params.toString()}`);
-        setPreviewData(response.data);
-      } catch (err) {
-        setPreviewError('Failed to load preview');
-        setPreviewData([]);
-      } finally {
-        setPreviewLoading(false);
+  const getSubmissionsByDifficultyData = () => {
+    const data = [];
+    const beginner = getMetricValue('Submissions by Difficulty - beginner');
+    const intermediate = getMetricValue('Submissions by Difficulty - intermediate');
+    
+    if (beginner > 0) data.push({ name: 'Beginner', count: beginner, fill: '#7692FF' });
+    if (intermediate > 0) data.push({ name: 'Intermediate', count: intermediate, fill: '#3D518C' });
+    
+    return data;
+  };
+
+  const getQuestionsByCompanyData = () => {
+    const data = [];
+    dashboardData.forEach(item => {
+      if (item.metric.startsWith('Questions by Company - ')) {
+        const companyName = item.metric.replace('Questions by Company - ', '');
+        data.push({ name: companyName, count: item.value, fill: '#7692FF' });
       }
-    };
-    fetchPreview();
-  }, [selectedFields, dateRange]);
+    });
+    return data;
+  };
+
+  const getSubmissionsByStatusData = () => {
+    const data = [];
+    const passed = getMetricValue('Submissions by Status - passed');
+    const error = getMetricValue('Submissions by Status - error');
+    const mismatch = getMetricValue('Submissions by Status - mismatch');
+    
+    if (passed > 0) data.push({ name: 'Passed', count: passed, fill: '#7692FF' });
+    if (error > 0) data.push({ name: 'Error', count: error, fill: '#E9724C' });
+    if (mismatch > 0) data.push({ name: 'Mismatch', count: mismatch, fill: '#ABD3FA' });
+    
+    return data;
+  };
+
+  const getUserTierData = () => {
+    const free = getMetricValue('Users by Tier - free');
+    const pro = getMetricValue('Users by Tier - pro');
+    
+    return [
+      { name: 'Free', value: free },
+      { name: 'Pro', value: pro },
+    ];
+  };
+
+  const getSubmissionsByCompanyData = () => {
+    const data = [];
+    dashboardData.forEach(item => {
+      if (item.metric.startsWith('Submissions by Company - ')) {
+        const companyName = item.metric.replace('Submissions by Company - ', '');
+        data.push({ name: companyName, count: item.value, fill: '#7692FF' });
+      }
+    });
+    return data;
+  };
 
   return (
     <AdminLayout>
@@ -388,112 +346,151 @@ const Dashboard = () => {
         }
       />
 
-      
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatsCard
-          title="Total Companies"
-          value={summary?.loading ? "Loading..." : summary?.counts?.totalCompanies?.toString() || "0"}
-          icon={<Building2 size={24} className="text-primary" />}
-          change={{ value: "12%", positive: true }}
-        />
-        <StatsCard
-          title="Total Questions"
-          value={summary?.loading ? "Loading..." : summary?.counts?.totalQuestions?.toString() || "0"}
-          icon={<FileQuestion size={24} className="text-primary-light" />}
-          change={{ value: "8%", positive: true }}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
         <StatsCard
           title="Registered Users"
-          value={summary?.loading ? "Loading..." : summary?.counts?.totalUsers?.toString() || "0"}
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Registered Users').toString()}
           icon={<Users size={24} className="text-primary-accent" />}
           change={{ value: "24%", positive: true }}
         />
         <StatsCard
-          title="Total Submissions"
-          value={summary?.loading ? "Loading..." : summary?.counts?.totalSubmissions?.toString() || "0"}
-          icon={<FileCheck size={24} className="text-primary-lightest" />}
+          title="Active Users"
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Active Users').toString()}
+          icon={<Users size={24} className="text-primary-accent" />}
+          change={{ value: "24%", positive: true }}
+        />
+        <StatsCard
+          title="Average Active Period"
+          value={dashboardLoading ? "Loading..." : getMetricValue('Average Active Period (Days)').toString()}
+          icon={<Clock size={24} className="text-primary-accent" />}
+          change={{ value: "8%", positive: true }}
+        />
+        <StatsCard
+          title="Number of Jobs (Last 7 Days)"
+          value={dashboardLoading ? "Loading..." : "0"}
+          icon={<Briefcase size={24} className="text-primary-accent" />}
+          change={{ value: "5%", positive: true }}
+        />
+        <StatsCard
+          title="Number of Jobs (Last 30 Days)"
+          value={dashboardLoading ? "Loading..." : "0"}
+          icon={<Briefcase size={24} className="text-primary-accent" />}
           change={{ value: "5%", positive: true }}
         />
       </div>
 
+             {/* Progress Bar for User Tier Breakdown */}
+       <div className="data-card mb-8">
+         <div className="grid grid-cols-1 gap-6">
+           <div className="space-y-4">
+             <h3 className="text-lg font-semibold">Users by Tier (Free/Pro)</h3>
+             <ProgressBar 
+               value={getUserTierData()[0]?.value + getUserTierData()[1]?.value || 0} 
+               progress={getUserTierData()[0]?.value > 0 ? (getUserTierData()[0].value / (getUserTierData()[0].value + getUserTierData()[1]?.value || 0)) * 100 : 0} 
+             />
+           </div>
+         </div>
+       </div>
 
-    {/* Preview Table */}
-    <div className="data-card mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Preview</h2>
-        </div>
-        {previewLoading ? (
-          <div className="py-8 text-center text-gray-500">Loading preview...</div>
-        ) : previewError ? (
-          <div className="py-8 text-center text-red-500">{previewError}</div>
-        ) : previewData && previewData.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Metric</th>
-                  <th>Value</th>
-                  <th>Date Range</th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewData.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap">{row.category}</td>
-                    <td>{row.metric}</td>
-                    <td>{row.value}</td>
-                    <td>{row.dateRange}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="py-8 text-center text-gray-400">No data to display.</div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+        <StatsCard
+          title="Number of Questions"
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Questions').toString()}
+          icon={<FileQuestion size={24} className="text-primary-accent" />}
+          change={{ value: "8%", positive: true }}
+        />
+        <StatsCard
+          title="Number of Submissions"
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Submissions').toString()}
+          icon={<FileCheck size={24} className="text-primary-accent" />}
+          change={{ value: "5%", positive: true }}
+        />
       </div>
-     
-      
-      {/* User Tier Breakdown Chart */}
+
+      {/* Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* <div className="data-card">
-          <h2 className="text-lg font-semibold mb-4">User Tier Breakdown</h2>
-          <div className="h-80 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={userTierData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {userTierData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div> */}
-           <div className="data-card">
+        {/* Questions by Difficulty */}
+        <div className="data-card">
           <h2 className="text-lg font-semibold mb-4">Questions by Difficulty</h2>
           <div className="h-80 flex items-center justify-center">
-            {difficultyChartLoading ? (
+            {dashboardLoading ? (
               <div className="text-gray-500">Loading chart...</div>
-            ) : difficultyChartError ? (
-              <div className="text-red-500">{difficultyChartError}</div>
-            ) : difficultyChartData.length > 0 ? (
+            ) : dashboardError ? (
+              <div className="text-red-500">{dashboardError}</div>
+            ) : getQuestionsByDifficultyData().length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                                     <Pie
+                     data={getQuestionsByDifficultyData()}
+                     cx="50%"
+                     cy="50%"
+                     labelLine={false}
+                     outerRadius={80}
+                     fill="#8884d8"
+                     dataKey="count"
+                     label={({ name, count }) => `${name}: ${count}`}
+                   >
+                    {getQuestionsByDifficultyData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-gray-400">No data available</div>
+            )}
+          </div>
+        </div>
+
+        {/* Submissions by Difficulty */}
+        <div className="data-card">
+          <h2 className="text-lg font-semibold mb-4">Submissions by Difficulty</h2>
+          <div className="h-80 flex items-center justify-center">
+            {dashboardLoading ? (
+              <div className="text-gray-500">Loading chart...</div>
+            ) : dashboardError ? (
+              <div className="text-red-500">{dashboardError}</div>
+            ) : getSubmissionsByDifficultyData().length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                                     <Pie
+                     data={getSubmissionsByDifficultyData()}
+                     cx="50%"
+                     cy="50%"
+                     labelLine={false}
+                     outerRadius={80}
+                     fill="#8884d8"
+                     dataKey="count"
+                     label={({ name, count }) => `${name}: ${count}`}
+                   >
+                    {getSubmissionsByDifficultyData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-gray-400">No data available</div>
+            )}
+          </div>
+        </div>
+
+        {/* Questions by Company */}
+        <div className="data-card">
+          <h2 className="text-lg font-semibold mb-4">Questions by Company</h2>
+          <div className="h-80 flex items-center justify-center">
+            {dashboardLoading ? (
+              <div className="text-gray-500">Loading chart...</div>
+            ) : dashboardError ? (
+              <div className="text-red-500">{dashboardError}</div>
+            ) : getQuestionsByCompanyData().length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={difficultyChartData}
+                  data={getQuestionsByCompanyData()}
                   margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -501,7 +498,7 @@ const Dashboard = () => {
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="count">
-                    {difficultyChartData.map((entry, index) => (
+                    {getQuestionsByCompanyData().map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Bar>
@@ -512,22 +509,30 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-        {/* Active Users Over Time Chart */}
+
+        {/* Submissions by Status */}
         <div className="data-card">
-          <h2 className="text-lg font-semibold mb-4">Active Users (Last 7 Days)</h2>
+          <h2 className="text-lg font-semibold mb-4">Submissions by Status</h2>
           <div className="h-80 flex items-center justify-center">
-            {activeUsersChartLoading ? (
+            {dashboardLoading ? (
               <div className="text-gray-500">Loading chart...</div>
-            ) : activeUsersChartError ? (
-              <div className="text-red-500">{activeUsersChartError}</div>
-            ) : activeUsersChartData.length > 0 ? (
+            ) : dashboardError ? (
+              <div className="text-red-500">{dashboardError}</div>
+            ) : getSubmissionsByStatusData().length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activeUsersChartData} margin={{ top: 5, right: 30, left: 20, bottom: 25 }}>
+                <BarChart
+                  data={getSubmissionsByStatusData()}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
+                  <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="active" fill="#7692FF" />
+                  <Bar dataKey="count">
+                    {getSubmissionsByStatusData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -536,59 +541,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      {/* Questions by Difficulty */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"> */}
-        {/* <div className="data-card">
-          <h2 className="text-lg font-semibold mb-4">Questions by Difficulty</h2>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={difficultyData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count">
-                  {difficultyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div> */}
-        {/* Questions by Type (example) */}
-        {/* <div className="data-card">
-          <h2 className="text-lg font-semibold mb-4">Questions by Type</h2>
-          <div className="h-80 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={questionTypeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {questionTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div> */}
-      {/* </div> */}
-      {/* Add more breakdowns as needed (by company, submissions, etc.) */}
-      
-      <div className="data-card">
+
+      {/* <div className="data-card">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Recent Submissions</h2>
           <a href="/submissions" className="text-sm text-primary-light hover:underline">
@@ -615,9 +569,8 @@ const Dashboard = () => {
                   <td>{submission.date}</td>
                   <td>
                     <span
-                      className={`status-badge ${
-                        submission.status === 'passed' ? 'status-badge-active' : 'bg-red-100 text-red-800'
-                      }`}
+                      className={`status-badge ${submission.status === 'passed' ? 'status-badge-active' : 'bg-red-100 text-red-800'
+                        }`}
                     >
                       {submission.status}
                     </span>
@@ -627,7 +580,7 @@ const Dashboard = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </AdminLayout>
   );
 };
