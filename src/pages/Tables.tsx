@@ -231,13 +231,13 @@ const Tables = () => {
           query: formData.query || '',
           insertData: formData.insertData || ''
         }));
-
+        console.log('resultAction', resultAction);
         if (createTable.rejected.match(resultAction)) {
           // Show backend error in toast
           const errorMessage = typeof resultAction.payload === "string"
             ? resultAction.payload
             : "Failed to save table. Please check the console for details.";
-
+console.log('errorMessage', errorMessage);
           console.error('Table creation failed:', resultAction.payload);
 
           toast({

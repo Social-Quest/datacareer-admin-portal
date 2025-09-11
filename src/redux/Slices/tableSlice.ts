@@ -62,7 +62,7 @@ const initialState: TableState = {
 //     try {
 //       // Simulate API delay
 //       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
 //       let filteredTables = [...staticTables];
 //       if (filters.search) {
 //         const searchLower = filters.search.toLowerCase();
@@ -132,14 +132,21 @@ export const createTable = createAsyncThunk(
         response: error.response?.data,
         status: error.response?.status
       });
-      
+
       // Return a more detailed error message
+      // return rejectWithValue(
+      //   error.response?.data?.message || 
+      //   error.response?.data?.error || 
+      //   error.message || 
+      //   'Failed to create table'
+      // );
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.response?.data?.error || 
-        error.message || 
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
         'Failed to create table'
       );
+
     }
   }
 );
@@ -191,12 +198,12 @@ export const updateTable = createAsyncThunk(
         response: error.response?.data,
         status: error.response?.status
       });
-      
+
       // Return a more detailed error message
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.response?.data?.error || 
-        error.message || 
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
         'Failed to update table'
       );
     }
@@ -309,14 +316,14 @@ const tableSlice = createSlice({
         state.loading = false;
         state.tables = Array.isArray(action.payload)
           ? action.payload.map((t: any) => ({
-              id: t.id,
-              name: t.tableName,
-              query: t.createTableQuery,
-              insertData: t.insertDataQuery,
-              createdAt: t.createdAt,
-              updatedAt: t.updatedAt,
-              status: t.status,
-            }))
+            id: t.id,
+            name: t.tableName,
+            query: t.createTableQuery,
+            insertData: t.insertDataQuery,
+            createdAt: t.createdAt,
+            updatedAt: t.updatedAt,
+            status: t.status,
+          }))
           : [];
       })
       .addCase(fetchDynamicTables.rejected, (state, action) => {
