@@ -1,117 +1,122 @@
-import * as React from "react"
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import React from "react";
+import DropDown from "./DropDown";
 
-import { cn } from "@/lib/utils"
-import { ButtonProps, buttonVariants } from "@/components/ui/button"
-
-const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
-  <nav
-    role="navigation"
-    aria-label="pagination"
-    className={cn("mx-auto flex w-full justify-center", className)}
-    {...props}
-  />
-)
-Pagination.displayName = "Pagination"
-
-const PaginationContent = React.forwardRef<
-  HTMLUListElement,
-  React.ComponentProps<"ul">
->(({ className, ...props }, ref) => (
-  <ul
-    ref={ref}
-    className={cn("flex flex-row items-center gap-1", className)}
-    {...props}
-  />
-))
-PaginationContent.displayName = "PaginationContent"
-
-const PaginationItem = React.forwardRef<
-  HTMLLIElement,
-  React.ComponentProps<"li">
->(({ className, ...props }, ref) => (
-  <li ref={ref} className={cn("", className)} {...props} />
-))
-PaginationItem.displayName = "PaginationItem"
-
-type PaginationLinkProps = {
-  isActive?: boolean
-} & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">
-
-const PaginationLink = ({
-  className,
-  isActive,
-  size = "icon",
-  ...props
-}: PaginationLinkProps) => (
-  <a
-    aria-current={isActive ? "page" : undefined}
-    className={cn(
-      buttonVariants({
-        variant: isActive ? "outline" : "ghost",
-        size,
-      }),
-      className
-    )}
-    {...props}
-  />
-)
-PaginationLink.displayName = "PaginationLink"
-
-const PaginationPrevious = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to previous page"
-    size="default"
-    className={cn("gap-1 pl-2.5", className)}
-    {...props}
-  >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
-  </PaginationLink>
-)
-PaginationPrevious.displayName = "PaginationPrevious"
-
-const PaginationNext = ({
-  className,
-  ...props
-}: React.ComponentProps<typeof PaginationLink>) => (
-  <PaginationLink
-    aria-label="Go to next page"
-    size="default"
-    className={cn("gap-1 pr-2.5", className)}
-    {...props}
-  >
-    <span>Next</span>
-    <ChevronRight className="h-4 w-4" />
-  </PaginationLink>
-)
-PaginationNext.displayName = "PaginationNext"
-
-const PaginationEllipsis = ({
-  className,
-  ...props
-}: React.ComponentProps<"span">) => (
-  <span
-    aria-hidden
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More pages</span>
-  </span>
-)
-PaginationEllipsis.displayName = "PaginationEllipsis"
-
-export {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
+interface PaginationProps {
+  currentPage?: number;
+  rowsPerPage?: number | string;
+  totalItems?: number;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (rowsPerPage: number | string) => void;
+  rowsPerPageOptions?: (number | string)[];
 }
+
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage = 1,
+  rowsPerPage = 10,
+  totalItems = 0,
+  onPageChange,
+  onRowsPerPageChange,
+  rowsPerPageOptions = [5, 10, 20, "Unlimited"],
+}) => {
+  // Normalize values
+  const page = Math.max(1, Number(currentPage) || 1);
+  const isUnlimited = rowsPerPage === "Unlimited";
+  const perPage = isUnlimited ? totalItems || 1 : Number(rowsPerPage);
+
+  // Total pages
+  const totalPages = isUnlimited
+    ? 1
+    : Math.max(1, Math.ceil(totalItems / perPage));
+
+  // Clamp page within range
+  const safePage = Math.min(page, totalPages);
+
+  // Index calculation
+  const startIndex =
+    totalItems === 0 ? 0 : (safePage - 1) * perPage + 1;
+
+  const endIndex = Math.min(safePage * perPage, totalItems);
+
+  // Arrow disable logic
+  const isPrevDisabled = safePage <= 1;
+  const isNextDisabled = safePage >= totalPages;
+
+  return (
+    <div className="flex flex-wrap justify-between items-center px-5 py-4 text-sm text-[#78829D] gap-3">
+      {/* Rows per page */}
+      <div className="flex items-center gap-2">
+        <span>Show</span>
+
+        <DropDown
+          value={rowsPerPage}
+          options={rowsPerPageOptions}
+          className="min-w-[80px]"
+          onChange={(val) => {
+            onRowsPerPageChange(val);
+            onPageChange(1);
+          }}
+        />
+
+        <span>per page</span>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-gray-500">
+          {totalItems === 0
+            ? "0 of 0"
+            : `${startIndex}–${endIndex} of ${totalItems}`}
+        </span>
+
+        {/* Prev */}
+        <button
+          disabled={isPrevDisabled}
+          onClick={() => !isPrevDisabled && onPageChange(safePage - 1)}
+          className={`px-2 py-1 cursor-pointer rounded-md ${
+            isPrevDisabled
+              ? "opacity-40 cursor-not-allowed"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          ←
+        </button>
+
+        {/* Page Numbers (hide if unlimited) */}
+        {!isUnlimited && (
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+              (p) => (
+                <button
+                  key={p}
+                  onClick={() => onPageChange(p)}
+                  className={`px-3 py-1 rounded-md cursor-pointer ${
+                    p === safePage
+                      ? "bg-[#F1F1F4] text-black font-medium"
+                      : "text-gray-600 hover:bg-[#F1F1F4]"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+          </div>
+        )}
+
+        {/* Next */}
+        <button
+          disabled={isNextDisabled}
+          onClick={() => !isNextDisabled && onPageChange(safePage + 1)}
+          className={`px-2 py-1 cursor-pointer rounded-md ${
+            isNextDisabled
+              ? "opacity-40 cursor-not-allowed"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Pagination;

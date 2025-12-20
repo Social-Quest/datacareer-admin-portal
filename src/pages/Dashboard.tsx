@@ -23,7 +23,6 @@ import { Button } from '@/components/ui/button';
 import { Download, Calendar, ListChecks } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ProgressBar } from '@/components/ui/ProgressBar';
 import { apiInstance } from "@/api/axiosApi";
 
 const COLORS = ['#7692FF', '#3D518C', '#E9724C', '#ABD3FA'];
@@ -50,7 +49,7 @@ const groupedFields = [
       { label: 'Number of Registered Users', value: 'registeredUsers' },
       { label: 'Number of Active Users', value: 'activeUsers' },
       { label: 'Average Active Period', value: 'avgActivePeriod' },
-      { label: 'Breakdown of Users by Tier (Free/Pro)', value: 'userTier' },
+      { label: 'Breakdown of Users by Tier (On Trial/Pro)', value: 'userTier' },
     ],
   },
   {
@@ -246,13 +245,53 @@ const Dashboard = () => {
   };
 
   const getUserTierData = () => {
-    const free = getMetricValue('Users by Tier - free');
+    const trial = getMetricValue('Users by Tier - trial') || getMetricValue('Users by Tier - free');
     const pro = getMetricValue('Users by Tier - pro');
     
-    return [
-      { name: 'Free', value: free },
-      { name: 'Pro', value: pro },
+    const data = [];
+    if (trial > 0) data.push({ name: 'On Trial', value: trial, fill: '#7692FF' });
+    if (pro > 0) data.push({ name: 'Pro', value: pro, fill: '#3D518C' });
+    
+    return data;
+  };
+
+  // Helper functions for user tier cards
+  const getUsersWithCouponCode = () => {
+    // Try multiple possible metric names
+    const directMetrics = [
+      'Users with Coupon Code',
+      'Users with Promo Code',
+      'Number of users purchased through coupon code',
+      'Coupon Code Users',
+      'Promo Code Users',
+      'Users by Coupon Code',
+      'Users by Promo Code',
+      'Users with Coupon/Promo Code',
+      'Number of Users with Coupon/Promo Code'
     ];
+    
+    for (const metric of directMetrics) {
+      const value = getMetricValue(metric);
+      if (value > 0) return value;
+    }
+    
+    // Search through all dashboard data for any metric containing "coupon" or "promo"
+    const couponMetric = dashboardData.find(item => 
+      item.metric && (
+        item.metric.toLowerCase().includes('coupon') || 
+        item.metric.toLowerCase().includes('promo')
+      )
+    );
+    
+    return couponMetric ? couponMetric.value : 0;
+  };
+
+  const getPaidUsers = () => {
+    return getMetricValue('Users by Tier - pro') || 0;
+  };
+
+  const getOnTrialUsers = () => {
+    return getMetricValue('Users by Tier - trial') || getMetricValue('Users by Tier - free') || 0;
   };
 
   const getSubmissionsByCompanyData = () => {
@@ -379,18 +418,59 @@ const Dashboard = () => {
         />
       </div>
 
-             {/* Progress Bar for User Tier Breakdown */}
-       <div className="data-card mb-8">
-         <div className="grid grid-cols-1 gap-6">
-           <div className="space-y-4">
-             <h3 className="text-lg font-semibold">Users by Tier (Free/Pro)</h3>
-             <ProgressBar 
-               value={getUserTierData()[0]?.value + getUserTierData()[1]?.value || 0} 
-               progress={getUserTierData()[0]?.value > 0 ? (getUserTierData()[0].value / (getUserTierData()[0].value + getUserTierData()[1]?.value || 0)) * 100 : 0} 
-             />
-           </div>
-         </div>
-       </div>
+      {/* Users by Tier Chart */}
+      <div className="data-card mb-8">
+        <h2 className="text-lg font-semibold mb-4">Users by Tier (On Trial/Pro)</h2>
+        <div className="h-80 flex items-center justify-center">
+          {dashboardLoading ? (
+            <div className="text-gray-500">Loading chart...</div>
+          ) : dashboardError ? (
+            <div className="text-red-500">{dashboardError}</div>
+          ) : getUserTierData().length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={getUserTierData()}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                >
+                  {getUserTierData().map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-gray-400">No data available</div>
+          )}
+        </div>
+      </div>
+
+      {/* User Tier Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <StatsCard
+          title="No. of users purchased through coupon code"
+          value={dashboardLoading ? "Loading..." : getUsersWithCouponCode().toString()}
+          icon={<Users size={24} className="text-primary-accent" />}
+        />
+        <StatsCard
+          title="Number of Paid Users"
+          value={dashboardLoading ? "Loading..." : getPaidUsers().toString()}
+          icon={<Users size={24} className="text-primary-accent" />}
+        />
+        <StatsCard
+          title="On Trial"
+          value={dashboardLoading ? "Loading..." : getOnTrialUsers().toString()}
+          icon={<Users size={24} className="text-primary-accent" />}
+        />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         <StatsCard
