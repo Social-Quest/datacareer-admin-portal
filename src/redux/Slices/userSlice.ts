@@ -108,6 +108,54 @@ export const changeUserPlan = createAsyncThunk(
   }
 );
 
+export const resetUserPassword = createAsyncThunk(
+  'user/resetPassword',
+  async (
+    { userId, newPassword }: { userId: number; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await apiInstance.patch(
+        `/api/auth/admin/user/password`,
+        { userId, newPassword },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(axiosError.response?.data?.message || 'Failed to reset user password');
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  'user/deleteUser',
+  async (
+    { userId }: { userId: number },
+    { rejectWithValue, dispatch }
+  ) => {
+    try {
+      const response = await apiInstance.delete(
+        `/api/auth/admin/user`,
+        {
+          data: { userId },
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(axiosError.response?.data?.message || 'Failed to delete user');
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -159,6 +207,18 @@ const userSlice = createSlice({
         state.loading = false;
       })
       .addCase(changeUserPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Reset User Password
+      .addCase(resetUserPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetUserPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(resetUserPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

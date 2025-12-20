@@ -4,7 +4,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import SearchFilter from '@/components/ui/SearchFilter';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { User, Eye, RotateCcw, Ban, CheckCircle } from 'lucide-react';
+import { User, Eye, RotateCcw, Ban, CheckCircle, Trash2, ArrowUpDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,11 +22,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { fetchUsersPreview, toggleUserStatus, setFilters, changeUserPlan, UserPlan } from '@/redux/Slices/userSlice';
+import { fetchUsersPreview, toggleUserStatus, setFilters, changeUserPlan, resetUserPassword, deleteUser, UserPlan } from '@/redux/Slices/userSlice';
 import { User as UserType } from '@/redux/Slices/userSlice';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { apiInstance } from "@/api/axiosApi";
+import Pagination from "@/components/ui/Pagination";
 
 // Status filter options
 const statusOptions = [
@@ -52,9 +55,11 @@ const Users = () => {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = React.useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = React.useState(false);
   const [isPlanDialogOpen, setIsPlanDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<UserType | null>(null);
   const [selectedPlan, setSelectedPlan] = React.useState<UserPlan>('free');
   const [cancelStripe, setCancelStripe] = React.useState(false);
+  const [newPassword, setNewPassword] = React.useState('');
   
   const userExportFields = [
     { label: "User ID", value: "userId" },
@@ -64,6 +69,7 @@ const Users = () => {
     { label: "Status", value: "status" },
     { label: "Plan/Subscription Tier", value: "plan" },
     { label: "Promo Code/Campaign", value: "promoCode" },
+    { label: "Subscription Start Date", value: "subscriptionStartDate" },
     { label: "Registration Date", value: "registrationDate" },
     { label: "Total Attempted Questions", value: "totalAttempted" },
     { label: "Total Successful Questions", value: "totalSuccessful" },
@@ -80,6 +86,14 @@ const Users = () => {
   const [userExportDateRange, setUserExportDateRange] = React.useState("all");
   const [userExportFieldsSelected, setUserExportFieldsSelected] = React.useState(userExportFields.map(f => f.value));
   const [userExportPopoverOpen, setUserExportPopoverOpen] = React.useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState<number | string>(10);
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string | null>(null);
+  const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
 
   // Fetch users on component mount and when filters change
   useEffect(() => {
@@ -95,10 +109,12 @@ const Users = () => {
   // Search and filter users
   const handleSearch = (term: string) => {
     dispatch(setFilters({ search: term }));
+    setCurrentPage(1); // Reset to first page on search
   };
 
   const handleStatusFilter = (status: string) => {
     dispatch(setFilters({ status }));
+    setCurrentPage(1); // Reset to first page on filter change
   };
 
   // Open user profile dialog
@@ -110,6 +126,7 @@ const Users = () => {
   // Open reset password dialog
   const openResetPasswordDialog = (user: UserType) => {
     setCurrentUser(user);
+    setNewPassword(''); // Reset password field when opening dialog
     setIsResetPasswordDialogOpen(true);
   };
 
@@ -144,15 +161,70 @@ const Users = () => {
     }
   };
 
-  // Handle password reset
-  const handleResetPassword = () => {
+  // Open delete user dialog
+  const openDeleteDialog = (user: UserType) => {
+    setCurrentUser(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle user deletion
+  const handleDeleteUser = async () => {
     if (!currentUser) return;
 
-    setIsResetPasswordDialogOpen(false);
-    toast({
-      title: "Success",
-      description: "Password reset link sent to the user's email",
-    });
+    try {
+      await dispatch(deleteUser({ userId: currentUser.id })).unwrap();
+      
+      // Refresh users list
+      await dispatch(
+        fetchUsersPreview({
+          fields: userExportFieldsSelected,
+          search: filters.search,
+          dateRange: userExportDateRange === '7d' ? '7' : userExportDateRange === '30d' ? '30' : 'all',
+        })
+      );
+
+      setIsDeleteDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error as string,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle password reset
+  const handleResetPassword = async () => {
+    if (!currentUser) return;
+
+    if (!newPassword || newPassword.trim() === '') {
+      toast({
+        title: "Error",
+        description: "Please enter a new password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await dispatch(resetUserPassword({ userId: currentUser.id, newPassword: newPassword.trim() })).unwrap();
+      setIsResetPasswordDialogOpen(false);
+      setNewPassword(''); // Clear password after success
+      toast({
+        title: "Success",
+        description: "User password has been reset successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error as string,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleChangePlan = async () => {
@@ -216,9 +288,39 @@ const Users = () => {
   const inactiveCount = users.filter(u => (u.status || u.Status || '').toLowerCase() === 'inactive').length;
 
   // Filter users in UI
-  const filteredUsers = filters.status
+  let filteredUsers = filters.status
     ? users.filter(u => (u.status || u.Status || '').toLowerCase() === filters.status)
     : users;
+
+  // Sort users by User ID
+  if (sortField === 'userId') {
+    filteredUsers = [...filteredUsers].sort((a, b) => {
+      const aValue = a.id || 0;
+      const bValue = b.id || 0;
+      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    });
+  }
+
+  // Calculate pagination
+  const isUnlimited = pageSize === "Unlimited";
+  const perPage = isUnlimited ? filteredUsers.length || 1 : Number(pageSize);
+  const totalPages = isUnlimited ? 1 : Math.ceil(filteredUsers.length / perPage);
+  const startIndex = isUnlimited ? 0 : (currentPage - 1) * perPage;
+  const endIndex = isUnlimited ? filteredUsers.length : startIndex + perPage;
+  const paginatedUsers = isUnlimited ? filteredUsers : filteredUsers.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newPageSize: number | string) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when page size changes
+  };
 
   return (
     <AdminLayout>
@@ -293,6 +395,22 @@ const Users = () => {
         </Popover>
         <Button
           size="sm"
+          variant="outline"
+          className="flex items-center gap-1"
+          onClick={() => {
+            if (sortField === 'userId') {
+              setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+            } else {
+              setSortField('userId');
+              setSortOrder('asc');
+            }
+          }}
+        >
+          <ArrowUpDown size={16} />
+          Sort {sortField === 'userId' && (sortOrder === 'asc' ? '' : '')}
+        </Button>
+        <Button
+          size="sm"
           className="flex items-center gap-1"
           onClick={exportUsersToCSV}
         >
@@ -306,7 +424,7 @@ const Users = () => {
         <span>Inactive: {inactiveCount}</span>
       </div> */}
 
-      <div className="data-card overflow-hidden">
+      <div className="data-card overflow-hidden ">
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -314,7 +432,9 @@ const Users = () => {
                 {userExportFields
                   .filter(f => userExportFieldsSelected.includes(f.value))
                   .map(field => (
-                    <th key={field.value}>{field.label}</th>
+                    <th key={field.value}>
+                      {field.label}
+                    </th>
                   ))}
                 <th>Actions</th>
               </tr>
@@ -332,8 +452,8 @@ const Users = () => {
                     {error}
                   </td>
                 </tr>
-              ) : filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              ) : paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
 
                   <tr key={user.id} className="hover:bg-gray-50">
                     {/* console.log("user = ",user) */}
@@ -364,7 +484,7 @@ const Users = () => {
                             </div>
                           ) : field.value === 'plan' ? (
                             (user.planType ?? user.plan ?? '')
-                          ) : field.value === 'lastLogin' || field.value === 'registrationDate' ? (
+                          ) : field.value === 'lastLogin' || field.value === 'subscriptionStartDate' || field.value === 'registrationDate' ? (
                             user[field.value] ? formatDateTime(user[field.value]) : 'Never'
                           ) : field.value === 'userId' ? (
                             user.id        // 🔥 now it will show #1001 instead of internal id
@@ -399,6 +519,12 @@ const Users = () => {
                               </>
                             )}
                           </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => openDeleteDialog(user)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 size={16} className="mr-2" /> Delete User
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
@@ -415,6 +541,18 @@ const Users = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {filteredUsers.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          rowsPerPage={pageSize}
+          totalItems={filteredUsers.length}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handlePageSizeChange}
+          rowsPerPageOptions={[10, 20, 50, 100, "Unlimited"]}
+        />
+      )}
 
       {/* User Profile Dialog */}
       <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
@@ -457,6 +595,10 @@ const Users = () => {
                     <p className="text-lg font-medium mt-1">{currentUser.lastLogin ? formatDateTime(currentUser.lastLogin) : 'Never'}</p>
                   </div>
                   <div>
+                    <h4 className="text-sm font-medium text-gray-500">Subscription Start Date</h4>
+                    <p className="text-lg font-medium mt-1">{currentUser.subscriptionStartDate ? formatDateTime(currentUser.subscriptionStartDate) : 'Unknown'}</p>
+                  </div>
+                  <div>
                     <h4 className="text-sm font-medium text-gray-500">Registration Date</h4>
                     <p className="text-lg font-medium mt-1">{currentUser.registrationDate ? formatDateTime(currentUser.registrationDate) : 'Unknown'}</p>
                   </div>
@@ -494,9 +636,24 @@ const Users = () => {
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              This will send a password reset link to {currentUser?.email}. Are you sure you want to continue?
+              Set a new password for {currentUser?.email}
             </DialogDescription>
           </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          </div>
+
           <DialogFooter className="mt-4">
             <Button
               variant="outline"
@@ -508,7 +665,7 @@ const Users = () => {
               onClick={handleResetPassword}
               className="bg-primary-light hover:bg-primary"
             >
-              Send Reset Link
+              Reset Password
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -567,6 +724,32 @@ const Users = () => {
             </Button>
             <Button onClick={handleChangePlan} className="bg-primary-light hover:bg-primary">
               Update Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete user <strong>{currentUser?.name}</strong> ({currentUser?.email})? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete User
             </Button>
           </DialogFooter>
         </DialogContent>
