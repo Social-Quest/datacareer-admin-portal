@@ -321,7 +321,7 @@ const Dashboard = () => {
           <div className="flex gap-2 items-center">
             {/* Date Range Dropdown */}
             <select
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-sm cursor-pointer"
               value={dateRange}
               onChange={e => setDateRange(e.target.value)}
             >
@@ -334,7 +334,7 @@ const Dashboard = () => {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="min-w-[160px] flex justify-between items-center px-3 py-1 text-sm border"
+                  className="min-w-[160px] flex justify-between items-center px-3 py-1 text-sm border cursor-pointer"
                 >
                   <span className="truncate text-left">{summaryText}</span>
                   <svg className="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.584l3.71-3.354a.75.75 0 111.02 1.1l-4.25 3.84a.75.75 0 01-1.02 0l-4.25-3.84a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>

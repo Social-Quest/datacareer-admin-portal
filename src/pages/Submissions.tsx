@@ -136,7 +136,7 @@ const Submissions = () => {
       >
         <Button
           onClick={handleExportCSV}
-          className="flex items-center gap-2 bg-primary-light hover:bg-primary text-white"
+          className="flex items-center gap-2 bg-primary-light hover:bg-primary text-white cursor-pointer"
         >
           <Download size={18} />
           Export CSV
@@ -208,7 +208,7 @@ const Submissions = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => openDetailsDialog(submission)}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 cursor-pointer"
                       >
                         <Eye size={16} /> View
                       </Button>

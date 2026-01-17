@@ -44,7 +44,7 @@ const SearchFilter = ({
           {filters.map((filter) => (
             <select
               key={filter.name}
-              className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5"
+              className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 cursor-pointer"
               value={filter.value}
               onChange={(e) => filter.onChange(e.target.value)}
             >

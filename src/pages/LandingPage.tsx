@@ -733,7 +733,7 @@ const LandingPage = () => {
                                     name="sectionId"
                                     value={featureData.sectionId}
                                     onChange={handleFeatureChange}
-                                    className="w-full p-2 border rounded-md"
+                                    className="w-full p-2 border rounded-md cursor-pointer"
                                 >
                                     <option value="feature_1">Feature 1</option>
                                     <option value="feature_2">Feature 2</option>
@@ -786,7 +786,7 @@ const LandingPage = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={addPoint}
-                                    className="text-xs"
+                                    className="text-xs cursor-pointer"
                                 >
                                     + Add Point
                                 </Button>
@@ -806,7 +806,7 @@ const LandingPage = () => {
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => removePoint(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                                             disabled={featureData.points.length <= 1}
                                         >
                                             <span className="text-lg">×</span>
@@ -1013,7 +1013,7 @@ const LandingPage = () => {
                                     variant="outline"
                                     size="sm"
                                     onClick={addPricingCardPoint}
-                                    className="text-xs"
+                                    className="text-xs cursor-pointer"
                                 >
                                     + Add Point
                                 </Button>
@@ -1033,7 +1033,7 @@ const LandingPage = () => {
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => removePricingCardPoint(index)}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                                             disabled={pricingCard.points.length <= 1}
                                         >
                                             <span className="text-lg">×</span>

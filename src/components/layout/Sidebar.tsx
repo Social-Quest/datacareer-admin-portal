@@ -139,7 +139,7 @@ const Sidebar = ({ onCollapsedChange }: SidebarProps) => {
               key={item.name}
               to={item.path}
               className={cn(
-                'flex items-center px-3 py-3 rounded-md transition-all',
+                'flex items-center px-3 py-3 rounded-md transition-all cursor-pointer',
                 isActive
                   ? 'bg-primary text-white'
                   : 'text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white',
@@ -157,7 +157,7 @@ const Sidebar = ({ onCollapsedChange }: SidebarProps) => {
           <button
             onClick={() => setQuestionDbOpen((open) => !open)}
             className={cn(
-              'flex items-center w-full px-3 py-3 rounded-md transition-all text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white',
+              'flex items-center w-full px-3 py-3 rounded-md transition-all text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white cursor-pointer',
               collapsed ? 'justify-center' : 'justify-start'
             )}
             aria-expanded={questionDbOpen}
@@ -177,7 +177,7 @@ const Sidebar = ({ onCollapsedChange }: SidebarProps) => {
                     key={item.name}
                     to={item.path}
                     className={cn(
-                      'flex items-center px-2 py-2 rounded-md transition-all',
+                      'flex items-center px-2 py-2 rounded-md transition-all cursor-pointer',
                       isActive
                         ? 'bg-primary text-white'
                         : 'text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white'
@@ -200,7 +200,7 @@ const Sidebar = ({ onCollapsedChange }: SidebarProps) => {
               key={item.name}
               to={item.path}
               className={cn(
-                'flex items-center px-3 py-3 rounded-md transition-all',
+                'flex items-center px-3 py-3 rounded-md transition-all cursor-pointer',
                 isActive
                   ? 'bg-primary text-white'
                   : 'text-gray-300 hover:bg-primary-dark hover:bg-opacity-70 hover:text-white',

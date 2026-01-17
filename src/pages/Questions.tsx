@@ -298,7 +298,7 @@ const Questions = () => {
       console.log("Submitting status:", formData.status);
       console.log("Submitting status (lowercase):", formData.status.toLowerCase());
 
-      
+
       if (currentQuestion) {
         // Update existing question
         await dispatch(updateQuestion({ id: currentQuestion.id, data: formDataToSubmit }));
@@ -309,7 +309,7 @@ const Questions = () => {
         dispatch(fetchQuestions(filters));
         setIsDialogOpen(false);
         // Re-fetch questions to ensure all related data is up-to-date
-       
+
       } else {
         console.log("formDataToSubmit = ", formDataToSubmit);
         // Create new question
@@ -406,7 +406,7 @@ const Questions = () => {
         title="Questions"
         description="Manage SQL practice questions"
         actions={
-          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary">
+          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary cursor-pointer">
             <Plus size={16} className="mr-1" /> Add Question
           </Button>
         }
@@ -501,6 +501,7 @@ const Questions = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => openPreviewDialog(question)}
+                          className='cursor-pointer'
                         >
                           <Eye size={16} />
                         </Button>
@@ -508,6 +509,7 @@ const Questions = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => openDialog(question)}
+                          className='cursor-pointer'
                         >
                           <Pencil size={16} />
                         </Button>
@@ -515,7 +517,7 @@ const Questions = () => {
                           variant="outline"
                           size="icon"
                           onClick={() => openDeleteDialog(question)}
-                          className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50"
+                          className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50 cursor-pointer"
                         >
                           <Trash2 size={16} />
                         </Button>
@@ -566,7 +568,7 @@ const Questions = () => {
                     name="companyId"
                     value={formData.companyId || ''}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select company</option>
                     {companies.map(company => (
@@ -584,7 +586,7 @@ const Questions = () => {
                     name="topicId"
                     value={formData.topicId || ''}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select topic</option>
                     {topics.map(topic => (
@@ -604,7 +606,7 @@ const Questions = () => {
                     name="dbType"
                     value={formData.dbType}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select Type</option>
                     {typeOptions.map(option => (
@@ -622,7 +624,7 @@ const Questions = () => {
                     name="difficulty"
                     value={formData.difficulty}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select Difficulty</option>
                     {difficultyOptions.map(option => (
@@ -640,7 +642,7 @@ const Questions = () => {
                     name="status"
                     value={formData.status}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select Status</option>
                     {statusOptions.map(option => (
@@ -657,7 +659,7 @@ const Questions = () => {
                     name="plan"
                     // value={formData.status}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   >
                     <option value="" disabled>Select Plan</option>
                     {planOptions.map(option => (
@@ -676,7 +678,7 @@ const Questions = () => {
                   name="dynamicTableInfoId"
                   value={formData.dynamicTableInfoId || ''}
                   onChange={handleChange}
-                  className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm cursor-pointer"
                   required
                 >
                   <option value="" disabled>Select table</option>
@@ -742,7 +744,7 @@ const Questions = () => {
                         type="button"
                         onClick={runSolutionQuery}
                         disabled={isRunningQuery || !formData.solutionQuery?.trim()}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
                       >
                         {isRunningQuery ? (
                           <>
@@ -757,7 +759,7 @@ const Questions = () => {
                         )}
                       </Button>
                     </div>
-                    
+
                     {/* Query Results */}
                     {queryResult && (
                       <div className="mt-4 p-4 border rounded-md bg-green-50">
