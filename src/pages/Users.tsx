@@ -511,7 +511,7 @@ const Users = () => {
                           <DropdownMenuItem onClick={() => handleToggleUserStatus(user)}>
                             {(user.status || user.Status)?.toLowerCase() === 'active' ? (
                               <>
-                                <Ban size={16} className="mr-2 text-red-500" /> Deactivate User
+                                <Ban size={16} className="mr-2" /> Deactivate User
                               </>
                             ) : (
                               <>
