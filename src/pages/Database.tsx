@@ -184,7 +184,7 @@ const DatabasePage = () => {
         title="Databases"
         description="Manage database schemas and relationships"
         actions={
-          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary">
+          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary cursor-pointer">
             <Plus size={16} className="mr-1" /> Create New Database
           </Button>
         }
@@ -218,6 +218,7 @@ const DatabasePage = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => openDialog(database)}
+                    className='cursor-pointer'
                   >
                     <Pencil size={16} />
                   </Button>
@@ -225,7 +226,7 @@ const DatabasePage = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => openDeleteDialog(database)}
-                    className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50"
+                    className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50 cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -274,9 +275,9 @@ const DatabasePage = () => {
                       id={`table-${table.id}`}
                       checked={formData.tables?.includes(table.id)}
                       onChange={() => handleTableSelect(table.id.toString())}
-                      className="rounded border-gray-300"
+                      className="rounded border-gray-300 cursor-pointer"
                     />
-                    <label htmlFor={`table-${table.id}`} className="text-sm">
+                    <label htmlFor={`table-${table.id}`} className="text-sm cursor-pointer">
                       {table.name}
                     </label>
                   </div>
@@ -302,7 +303,7 @@ const DatabasePage = () => {
               {
 
                 (formData.schemaImage && typeof formData.schemaImage === 'string') ? (formData.schemaImage.startsWith("http://")) ? formData.schemaImage = formData.schemaImage.replace('http://', 'https://') : '' : ''
-                
+
               }
               {formData.schemaImage && typeof formData.schemaImage === 'string' && (
                 <img

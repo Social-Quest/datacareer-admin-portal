@@ -38,7 +38,7 @@ const Header = () => {
       <div className="flex items-center space-x-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center space-x-2 hover:bg-gray-50 rounded-full pl-2 pr-3 py-1.5">
+            <button className="flex items-center space-x-2 hover:bg-gray-50 rounded-full pl-2 pr-3 py-1.5 cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <span className="font-medium text-white">A</span>
               </div>
@@ -57,7 +57,7 @@ const Header = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
+              className="text-red-600 focus:text-red-600 cursor-pointer"
               onClick={handleLogout}
             >
               <LogOut size={16} className="mr-2" />

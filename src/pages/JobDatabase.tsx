@@ -11,7 +11,7 @@
 
 //   const handleRefresh = () => {
 //     setIsRefreshing(true);
-    
+
 //     // Simulate refresh process
 //     setTimeout(() => {
 //       setIsRefreshing(false);
@@ -28,7 +28,7 @@
 //         title="Job Database"
 //         description="Manage and refresh job database from GCP"
 //       />
-      
+
 //       <div className="mt-8">
 //         <div className="data-card max-w-2xl">
 //           <div className="space-y-6">
@@ -94,7 +94,7 @@ import PageHeader from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiInstance } from '../api/axiosApi'; // ✅ import axios instance
+import { apiInstance } from '../api/axiosApi';
 
 const JobDatabase = () => {
   const { toast } = useToast();
@@ -104,8 +104,8 @@ const JobDatabase = () => {
     try {
       setIsRefreshing(true);
 
-      const response = await apiInstance.post("api/jobs/syncBigquery"); 
-      // ✅ No need to pass token, interceptor handles it
+      const response = await apiInstance.post("api/jobs/syncBigquery");
+      // No need to pass token, interceptor handles it
 
       toast({
         title: "Success",
@@ -158,7 +158,7 @@ const JobDatabase = () => {
             <Button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="w-full sm:w-auto bg-primary-light hover:bg-primary flex items-center gap-2"
+              className="w-full sm:w-auto bg-primary-light hover:bg-primary flex items-center gap-2 cursor-pointer"
               size="lg"
             >
               {isRefreshing ? (

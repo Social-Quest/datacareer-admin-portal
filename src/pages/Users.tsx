@@ -60,7 +60,7 @@ const Users = () => {
   const [selectedPlan, setSelectedPlan] = React.useState<UserPlan>('free');
   const [cancelStripe, setCancelStripe] = React.useState(false);
   const [newPassword, setNewPassword] = React.useState('');
-  
+
   const userExportFields = [
     { label: "User ID", value: "userId" },
     { label: "Name", value: "name" },
@@ -86,11 +86,11 @@ const Users = () => {
   const [userExportDateRange, setUserExportDateRange] = React.useState("all");
   const [userExportFieldsSelected, setUserExportFieldsSelected] = React.useState(userExportFields.map(f => f.value));
   const [userExportPopoverOpen, setUserExportPopoverOpen] = React.useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState<number | string>(10);
-  
+
   // Sorting state
   const [sortField, setSortField] = React.useState<string | null>(null);
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('asc');
@@ -138,7 +138,7 @@ const Users = () => {
     setCancelStripe(false);
     setIsPlanDialogOpen(true);
   };
-  
+
   // Toggle user status (activate/deactivate)
   const handleToggleUserStatus = async (user: UserType) => {
     console.log("user  = =", user);
@@ -173,7 +173,7 @@ const Users = () => {
 
     try {
       await dispatch(deleteUser({ userId: currentUser.id })).unwrap();
-      
+
       // Refresh users list
       await dispatch(
         fetchUsersPreview({
@@ -344,7 +344,7 @@ const Users = () => {
 
       <div className="flex gap-2 items-center mb-4">
         <select
-          className="border rounded px-2 py-1 text-sm"
+          className="border rounded px-2 py-1 text-sm cursor-pointer"
           value={userExportDateRange}
           onChange={e => setUserExportDateRange(e.target.value)}
         >
@@ -355,7 +355,7 @@ const Users = () => {
         {/* Field Selection Popover */}
         <Popover open={userExportPopoverOpen} onOpenChange={setUserExportPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-[160px] flex justify-between items-center px-3 py-1 text-sm border">
+            <Button variant="outline" className="min-w-[160px] flex justify-between items-center px-3 py-1 text-sm border cursor-pointer">
               <span className="truncate text-left">
                 {userExportFieldsSelected.length === userExportFields.length
                   ? "All Fields"
@@ -396,7 +396,7 @@ const Users = () => {
         <Button
           size="sm"
           variant="outline"
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 cursor-pointer"
           onClick={() => {
             if (sortField === 'userId') {
               setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -457,7 +457,7 @@ const Users = () => {
 
                   <tr key={user.id} className="hover:bg-gray-50">
                     {/* console.log("user = ",user) */}
-                   
+
                     {userExportFields
                       .filter(f => userExportFieldsSelected.includes(f.value))
                       .map(field => (
@@ -502,13 +502,13 @@ const Users = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openProfileDialog(user)}>
+                          <DropdownMenuItem onClick={() => openProfileDialog(user)} className='cursor-pointer'>
                             <User size={16} className="mr-2" /> View Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openResetPasswordDialog(user)}>
+                          <DropdownMenuItem onClick={() => openResetPasswordDialog(user)} className='cursor-pointer'>
                             <RotateCcw size={16} className="mr-2" /> Reset Password
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleUserStatus(user)}>
+                          <DropdownMenuItem onClick={() => handleToggleUserStatus(user)} className='cursor-pointer'>
                             {(user.status || user.Status)?.toLowerCase() === 'active' ? (
                               <>
                                 <Ban size={16} className="mr-2" /> Deactivate User
@@ -519,9 +519,9 @@ const Users = () => {
                               </>
                             )}
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => openDeleteDialog(user)}
-                            className="text-red-600 focus:text-red-600"
+                            className="text-red-600 focus:text-red-600 cursor-pointer"
                           >
                             <Trash2 size={16} className="mr-2" /> Delete User
                           </DropdownMenuItem>
@@ -639,7 +639,7 @@ const Users = () => {
               Set a new password for {currentUser?.email}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="new-password">New Password</Label>
@@ -691,7 +691,7 @@ const Users = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">New plan</label>
               <select
-                className="border rounded px-2 py-2 text-sm w-full"
+                className="border rounded px-2 py-2 text-sm w-full cursor-pointer"
                 value={selectedPlan}
                 onChange={(e) => {
                   const next = e.target.value as UserPlan;

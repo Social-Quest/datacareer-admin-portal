@@ -295,7 +295,7 @@ const Tables = () => {
         title="Tables"
         description="Manage database tables"
         actions={
-          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary">
+          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary cursor-pointer">
             <Plus size={16} className="mr-1" /> Create New Table
           </Button>
         }
@@ -333,6 +333,7 @@ const Tables = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => openDialog(table)}
+                      className='cursor-pointer'
                     >
                       <Pencil size={16} />
                     </Button>
@@ -340,7 +341,7 @@ const Tables = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => openDeleteDialog(table)}
-                      className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50"
+                      className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50 cursor-pointer"
                     >
                       <Trash2 size={16} />
                     </Button>

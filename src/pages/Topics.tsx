@@ -16,20 +16,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { RootState, AppDispatch } from '@/redux/store';
-import { 
-  fetchTopics, 
-  createTopic, 
-  updateTopic, 
+import {
+  fetchTopics,
+  createTopic,
+  updateTopic,
   deleteTopic,
   setFilters,
-  Topic 
+  Topic
 } from '@/redux/Slices/topicSlice';
 
 const Topics = () => {
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const { topics, loading, error, filters } = useSelector((state: RootState) => state.topic);
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState<Topic | null>(null);
@@ -73,7 +73,7 @@ const Topics = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name) {
       toast({
         title: "Error",
@@ -82,7 +82,7 @@ const Topics = () => {
       });
       return;
     }
-    
+
     try {
       if (currentTopic) {
         // Update existing topic
@@ -112,7 +112,7 @@ const Topics = () => {
   // Handle topic deletion
   const handleDelete = async () => {
     if (!currentTopic) return;
-    
+
     try {
       await dispatch(deleteTopic(currentTopic.id));
       setIsDeleteDialogOpen(false);
@@ -140,12 +140,12 @@ const Topics = () => {
         title="Topics"
         description="Manage SQL question topics"
         actions={
-          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary">
+          <Button onClick={() => openDialog()} className="bg-primary-light hover:bg-primary cursor-pointer">
             <Plus size={16} className="mr-1" /> Add Topic
           </Button>
         }
       />
-      
+
       <div className="flex mb-6">
         <div className="relative flex-grow max-w-md">
           <Input
@@ -162,7 +162,7 @@ const Topics = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full text-center py-8 text-gray-500">
@@ -184,18 +184,19 @@ const Topics = () => {
                   <h3 className="text-lg font-medium">{topic.name}</h3>
                 </div>
                 <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => openDialog(topic)}
+                    className='cursor-pointer'
                   >
                     <Pencil size={16} />
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => openDeleteDialog(topic)}
-                    className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50"
+                    className="text-red-500 hover:text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50 cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -213,7 +214,7 @@ const Topics = () => {
           ))
         )}
       </div>
-      
+
       {/* Create/Edit Topic Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
@@ -222,13 +223,13 @@ const Topics = () => {
               {currentTopic ? 'Edit Topic' : 'Add New Topic'}
             </DialogTitle>
             <DialogDescription>
-              {currentTopic 
+              {currentTopic
                 ? 'Update the topic name below.'
                 : 'Enter the topic name to add it to the platform.'
               }
             </DialogDescription>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div>
               <Label htmlFor="name">Topic Name*</Label>
@@ -241,11 +242,11 @@ const Topics = () => {
                 className="mt-1"
               />
             </div>
-            
+
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsDialogOpen(false)}
               >
                 Cancel
@@ -257,7 +258,7 @@ const Topics = () => {
           </form>
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
@@ -273,14 +274,14 @@ const Topics = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDelete}
             >
               Delete
