@@ -5,8 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth-context";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { Provider } from 'react-redux';
-import { store } from '@/redux/store';
+import { Provider, useDispatch } from 'react-redux';
+import { store, AppDispatch } from '@/redux/store';
 
 // Import all pages
 import Login from "./pages/Login";
@@ -23,130 +23,143 @@ import NotFound from "./pages/NotFound";
 import DatabasePage from '@/pages/Database';
 import JobDatabase from './pages/JobDatabase';
 import LandingPage from './pages/LandingPage';
+import { fetchMe } from "./redux/Slices/authSlice";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Navigate to="/dashboard" replace />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/companies"
-                element={
-                  <ProtectedRoute>
-                    <Companies />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/domains"
-                element={
-                  <ProtectedRoute>
-                    <Domains />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/questions"
-                element={
-                  <ProtectedRoute>
-                    <Questions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/topics"
-                element={
-                  <ProtectedRoute>
-                    <Topics />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tables"
-                element={
-                  <ProtectedRoute>
-                    <Tables />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/database"
-                element={
-                  <ProtectedRoute>
-                    <DatabasePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/job-database"
-                element={
-                  <ProtectedRoute>
-                    <JobDatabase />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/landing-page"
-                element={
-                  <ProtectedRoute>
-                    <LandingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/submissions"
-                element={
-                  <ProtectedRoute>
-                    <Submissions />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/users"
-                element={
-                  <ProtectedRoute>
-                    <Users />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </Provider>
-);
+const App = () => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(fetchMe());
+    }
+  }, [dispatch]);
+
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Navigate to="/dashboard" replace />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/companies"
+                  element={
+                    <ProtectedRoute>
+                      <Companies />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/domains"
+                  element={
+                    <ProtectedRoute>
+                      <Domains />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/questions"
+                  element={
+                    <ProtectedRoute>
+                      <Questions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/topics"
+                  element={
+                    <ProtectedRoute>
+                      <Topics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tables"
+                  element={
+                    <ProtectedRoute>
+                      <Tables />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/database"
+                  element={
+                    <ProtectedRoute>
+                      <DatabasePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/job-database"
+                  element={
+                    <ProtectedRoute>
+                      <JobDatabase />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/landing-page"
+                  element={
+                    <ProtectedRoute>
+                      <LandingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/submissions"
+                  element={
+                    <ProtectedRoute>
+                      <Submissions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <ProtectedRoute>
+                      <Users />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </Provider>
+  );
+};
 
 export default App;
