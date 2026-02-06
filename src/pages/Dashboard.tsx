@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import StatsCard from '@/components/ui/StatsCard';
 import PageHeader from '@/components/ui/PageHeader';
-import { Users, Clock, Briefcase, FileQuestion, FileCheck } from 'lucide-react';
+import { Users, UserCheck, Clock, Briefcase, FileQuestion, FileCheck } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -48,7 +48,7 @@ const groupedFields = [
     fields: [
       { label: 'Number of Registered Users', value: 'registeredUsers' },
       { label: 'Number of Active Users', value: 'activeUsers' },
-      { label: 'Average Active Period', value: 'avgActivePeriod' },
+      { label: 'Average Active Period (Hours)', value: 'avgActivePeriod' },
       { label: 'Breakdown of Users by Tier (On Trial/Pro)', value: 'userTier' },
       { label: 'Number of Pro Users with Coupon', value: 'proUsersWithCoupon' },
     ],
@@ -400,7 +400,7 @@ const Dashboard = () => {
         <StatsCard
           title="Registered Users"
           value={dashboardLoading ? "Loading..." : getMetricValue('Number of Registered Users').toString()}
-          icon={<Users size={24} className="text-primary-accent" />}
+          icon={<UserCheck size={24} className="text-primary-accent" />}
           change={{ value: "24%", positive: true }}
         />
         <StatsCard
@@ -408,9 +408,10 @@ const Dashboard = () => {
           value={dashboardLoading ? "Loading..." : getMetricValue('Number of Active Users').toString()}
           icon={<Users size={24} className="text-primary-accent" />}
           change={{ value: "24%", positive: true }}
+          tooltip="Represents the total number of unique users who have made at least one submission during the period you have filtered (e.g., Last 7 days, 30 days, or All time)."
         />
         <StatsCard
-          title="Average Active Period"
+          title="Average Active Period (hours)"
           value={dashboardLoading ? "Loading..." : getMetricValue('Average Active Period (Days)').toString()}
           icon={<Clock size={24} className="text-primary-accent" />}
           change={{ value: "8%", positive: true }}
