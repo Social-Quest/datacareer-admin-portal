@@ -447,13 +447,13 @@ const Dashboard = () => {
         />
         <StatsCard
           title="Number of Jobs (Last 7 Days)"
-          value={dashboardLoading ? "Loading..." : "0"}
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Jobs (Last 7 Days)').toString()}
           icon={<Briefcase size={24} className="text-primary-accent" />}
           change={{ value: "5%", positive: true }}
         />
         <StatsCard
           title="Number of Jobs (Last 30 Days)"
-          value={dashboardLoading ? "Loading..." : "0"}
+          value={dashboardLoading ? "Loading..." : getMetricValue('Number of Jobs (Last 30 Days)').toString()}
           icon={<Briefcase size={24} className="text-primary-accent" />}
           change={{ value: "5%", positive: true }}
         />
